@@ -50,10 +50,8 @@ docker-compose exec -it php sh
 ```
 ## Contribution
 
-I would be grateful if you would like to contribute to my project. Please let me know if you are interested. Thank you.
-
-
-
+I would be grateful if you would like to contribute to my project. 
+Please let me know if you are interested. Thank you.
 
 ## License
 
