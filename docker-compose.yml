@@ -1,0 +1,115 @@
+version: '3.5'
+  
+networks:
+  frontend:
+    driver: ${NETWORKS_DRIVER}
+  backend:
+    driver: ${NETWORKS_DRIVER}
+
+volumes:
+  php:
+    driver: ${VOLUMES_DRIVER}
+  elasticsearch:
+    driver: ${VOLUMES_DRIVER}
+  mysql:
+    driver: ${VOLUMES_DRIVER}
+  mailhog:
+    driver: ${VOLUMES_DRIVER}
+  nginx:
+    driver: ${VOLUMES_DRIVER}
+
+services:
+  php:
+    build:
+      context: ./php
+    environment:
+      - VERBOSE=true
+    volumes:
+      - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
+    networks:
+      - backend
+    expose:
+      - "9000"
+      - "9003"
+    extra_hosts:
+      - "dockerhost:${DOCKER_HOST_IP}"
+      - "host.docker.internal:host-gateway"
+    working_dir: /var/www
+
+  nginx:
+    build:
+      context: ./nginx
+    environment:
+      - VERBOSE=true
+      - MAGENTO_VERSION=2
+    networks:
+      - frontend
+      - backend
+    ports:
+      - "8080:8080"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
+    extra_hosts:
+      - "dockerhost:${DOCKER_HOST_IP}"
+    working_dir: /var/www
+
+  mysql:
+    build:
+      context: ./mysql
+      args:
+        - MYSQL_VERSION=${MYSQL_VERSION}
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - TZ=${WORKSPACE_TIMEZONE}
+    volumes:
+      - ${DATA_PATH_HOST}/mysql:/var/lib/mysql
+      - ${MYSQL_ENTRYPOINT_INITDB}:/docker-entrypoint-initdb.d
+    ports:
+      - "${MYSQL_PORT}:3306"
+    networks:
+      - backend
+
+  elasticsearch:
+    build:
+      context: ./elasticsearch
+      args:
+        - ELK_VERSION=${ELK_VERSION}
+    volumes:
+      - elasticsearch:/usr/share/elasticsearch/data
+    environment:
+      - cluster.name=s5k-cluster
+      - node.name=s5k-node
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - cluster.initial_master_nodes=s5k-node
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    ports:
+      - "${ELASTICSEARCH_HOST_HTTP_PORT}:9200"
+      - "${ELASTICSEARCH_HOST_TRANSPORT_PORT}:9300"
+    depends_on:
+      - php
+    networks:
+      - frontend
+      - backend
+
+  mailhog:
+    build: ./mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - frontend
+      - backend
