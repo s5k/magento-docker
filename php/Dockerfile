@@ -6,7 +6,7 @@ RUN apk --update --no-cache add \
 	icu-dev \
 	libxslt-dev \
 	libzip-dev \
-  git
+	git
 
 RUN apk --update --no-cache --virtual build-deps add \
 	g++ \
@@ -27,7 +27,8 @@ RUN docker-php-ext-install \
 	soap \
 	sockets \
 	xsl \
-	zip
+	zip \
+	opcache 
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer 
 
