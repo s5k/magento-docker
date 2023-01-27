@@ -55,4 +55,9 @@ COPY ./conf/www.conf /usr/local/etc/php-fpm.d/www.conf
 
 RUN apk del build-deps
 
+### non-cache section ###
+ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
+RUN sed -i -e 's/^xdebug.mode=debug,develop,profile/xdebug.mode=off/g' /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+
+
 CMD [ "sh", "/usr/local/bin/startup.sh" ]
