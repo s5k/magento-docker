@@ -7,4 +7,6 @@ if [[ "$VERBOSE" == "true" ]]; then
 fi
 
 chown -R nobody:nobody /var/www
+/var/www/bin/magento cron:install
 php-fpm -F
+
