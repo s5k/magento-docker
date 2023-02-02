@@ -26,6 +26,9 @@ services:
       GID: "$(id -g)"
     build:
       context: ./php
+      args:
+        UID: $(id -u)
+        GID: $(id -g)
     environment:
       - VERBOSE=true
     volumes:

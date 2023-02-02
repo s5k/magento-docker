@@ -46,8 +46,13 @@ RUN mkdir -p /var/www/var/codeprofiling/profiles \
 RUN curl -LkSso /usr/bin/mhsendmail 'https://github.com/mailhog/mhsendmail/releases/download/v0.2.0/mhsendmail_linux_amd64'&& \
     chmod 0755 /usr/bin/mhsendmail
 
-RUN usermod -u 1000 nobody && \
-	groupmod -g 1000 nobody
+# Set the user and group ID
+ARG UID=1001
+ARG GID=1001
+RUN usermod -u $UID www-data && \
+    groupmod -g $GID www-data
+RUN usermod -u $UID nobody && \
+	groupmod -g $GID nobody
 
 COPY ./bin/startup.sh /usr/local/bin/startup.sh
 COPY ./conf/php.ini /usr/local/etc/php/php.ini
