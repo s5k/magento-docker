@@ -20,6 +20,10 @@ volumes:
 
 services:
   php:
+    user: "${UID}:${GID}"
+    environment:
+      UID: "$(id -u)"
+      GID: "$(id -g)"
     build:
       context: ./php
     environment:
